@@ -9,12 +9,25 @@ class UserCreate(BaseModel):
     mobile: str
     password: str
 
+
+# ----------------------------
+# Request Models
+# ----------------------------
+class PaymentRequest(BaseModel):
+    plan_id: str
+
+class PaymentVerifyRequest(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+
 class UserResponse(BaseModel):
     id: int
     email: str
     username: str
     mobile: str
     is_active: bool
+    token_balance: int
     
     class Config:
         orm_mode = True

@@ -64,7 +64,20 @@ function Chat() {
       });
 
       if (!response.ok) {
-        throw new Error("Chat request failed");
+        // Handle specific backend status codes
+        if (response.status === 402) {
+          // Token insufficient
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: "⚠️ You have insufficient tokens. Please top up to continue chatting."
+            }
+          ]);
+          return; // stop further execution
+        } else {
+          throw new Error("Chat request failed");
+        }
       }
 
       const data = await response.json();

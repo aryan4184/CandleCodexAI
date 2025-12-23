@@ -27,9 +27,22 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     token_balance = Column(Integer, default=100) # Give 100 free tokens on signup
     is_active = Column(Boolean, default=True)
+    auth_provider = Column(String, default="email")
 
     # Optional relationship
     conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
+    transactions = relationship("Transaction", back_populates="user")
+    payment_orders = relationship("PaymentOrder", back_populates="user")
+
+
+
+class OTP(Base):
+    __tablename__ = "otps"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, index=True)
+    code = Column(String)
+    expires_at = Column(DateTime)
+
 
 
 # In app/models.py
@@ -43,6 +56,22 @@ class Transaction(Base):
     status = Column(String)           # 'pending', 'completed', 'failed'
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    user = relationship("User", back_populates="transactions")
+
+
+class PaymentOrder(Base):
+    __tablename__ = "payment_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    razorpay_order_id = Column(String, unique=True, index=True)
+    razorpay_payment_id = Column(String, unique=True, nullable=True)
+    amount = Column(Integer)  # in paise
+    tokens = Column(Integer)
+    status = Column(String, default="created")
+
+    user = relationship("User", back_populates="payment_orders")
+
 
 
 class Conversation(Base):
@@ -53,7 +82,7 @@ class Conversation(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="conversations")
-    messages = relationship("Message", back_populates="conversation")
+    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
 
 class Message(Base):
     __tablename__ = "messages"
@@ -65,7 +94,7 @@ class Message(Base):
     image_url = Column(Text, nullable=True)  # Stores n8n image result
     timestamp = Column(DateTime, default=datetime.utcnow)
 
-    conversation = relationship("Conversation", back_populates="messages", cascade="all, delete-orphan")
+    conversation = relationship("Conversation", back_populates="messages")
 
 
 

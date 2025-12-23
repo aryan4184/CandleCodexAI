@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from app.db import get_db, User
 from app.schemas import UserCreate, UserResponse, Token
-from .auth import (
+from app.services.auth import (
     get_password_hash,
     authenticate_user,
     create_access_token,

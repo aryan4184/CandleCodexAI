@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.db import Message, Conversation
 from app.schemas import MessageCreate, MessageResponse
-from app.services import trigger_n8n_workflow
-from app.routers.auth import get_current_user
+from app.services.services import trigger_n8n_workflow
+from app.services.auth import get_current_user
 
 router = APIRouter(tags=["chat"])
 
@@ -29,7 +29,7 @@ async def chat_endpoint(
 
 
     # 2. CHECK BALANCE
-    if user.token_balance < COST_TEXT:
+    if current_user.token_balance < COST_TEXT:
          raise HTTPException(status_code=402, detail="Insufficient tokens. Please top up.")
 
 
@@ -51,12 +51,12 @@ async def chat_endpoint(
 
     # 4. CALCULATE DEDUCTION
     cost = COST_TEXT
-    if response['image_url']:
-        cost = COST_IMAGE
+    # if ai_result['image_url']:
+    #     cost = COST_IMAGE
 
 
     # 5. DEDUCT & SAVE
-    user.token_balance -= cost
+    current_user.token_balance -= cost
     db.commit()
 
 

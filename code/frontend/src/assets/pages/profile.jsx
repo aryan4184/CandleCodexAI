@@ -60,10 +60,10 @@ function Profile() {
           <div className="profile-container">
             <section className="profile-card">
               <h2>Profile Details</h2>
-              {/* <div className="profile-row">
-                <span>ID</span>
-                <span>{user.id}</span>
-              </div> */}
+              <div className="profile-row">
+                <span>Token Balance</span>
+                <span>{user.token_balance}</span>
+              </div>
               <div className="profile-row">
                 <span>Username</span>
                 <span>{user.username}</span>
