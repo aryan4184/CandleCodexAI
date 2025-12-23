@@ -1,0 +1,42 @@
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from datetime import datetime
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    username: str
+    mobile: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    username: str
+    mobile: str
+    is_active: bool
+    
+    class Config:
+        orm_mode = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+
+class MessageCreate(BaseModel):
+    content: str
+    conversation_id: Optional[int] = None # Optional: If None, create new conversation
+
+class MessageResponse(BaseModel):
+    id: int
+    sender: str
+    content: str
+    image_url: Optional[str] = None
+    timestamp: datetime
+
+    class Config:
+        orm_mode = True

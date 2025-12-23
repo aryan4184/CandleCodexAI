@@ -1,0 +1,120 @@
+{
+  "name": "Webhook Text Input → Response",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "1fcf3bd8-a99c-42c2-8bc4-52e9462f3b82",
+      "name": "Set Result",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        192,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0497ec37-a3fe-4629-8694-1914fac38dd6",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        496,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "text-input",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "da3020f1-3c9a-411b-8a3c-b10b2178f62e",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        224
+      ],
+      "webhookId": "aa13c1a6-69f9-41e7-9ff5-0d2c08994d9c"
+    }
+  ],
+  "pinData": {
+    "Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "aryanprince.app.n8n.cloud",
+            "user-agent": "python-httpx/0.28.1",
+            "content-length": "0",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "2409:40d0:103c:d9ba:ccba:4c5d:c694:6a7d",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "IN",
+            "cf-ray": "9b1ff84ae34c8ed4-FRA",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "x-forwarded-for": "2409:40d0:103c:d9ba:ccba:4c5d:c694:6a7d, 172.70.243.47",
+            "x-forwarded-host": "aryanprince.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-16-6f778b7769-zs7bd",
+            "x-is-trusted": "yes",
+            "x-real-ip": "2409:40d0:103c:d9ba:ccba:4c5d:c694:6a7d"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "https://aryanprince.app.n8n.cloud/webhook-test/text-input",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Set Result": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Set Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c7b9b747-3622-4354-8833-1ac3f454f889",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d85a41b28a9b296e47aee85d416f46d9c1f595110d8fd6e1ccaa9dfda3cae4c"
+  },
+  "id": "5fseRqEULImJI39B",
+  "tags": []
+}

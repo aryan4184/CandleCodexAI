@@ -1,0 +1,108 @@
+.home-main {
+  padding: 85px 24px; /* top/bottom padding, horizontal responsive */
+  min-height: calc(100vh - 180px); /* approximate header + footer height */
+  background: #ffffff;
+  font-family: "Inter", system-ui, sans-serif;
+  /* Remove flex properties */
+  /* We use block layout and vertical spacing naturally */
+}
+
+.home-content {
+  max-width: 800px;
+  margin: 0 auto; /* center horizontally */
+  text-align: center;
+}
+
+.home-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 20px;
+}
+
+.home-description {
+  font-size: 1.125rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.home-buttons {
+  display: block; /* default block */
+  text-align: center; /* center inline-block buttons */
+  margin-bottom: 40px; /* space after buttons */
+}
+
+.home-buttons .btn {
+  display: inline-block; /* line up buttons horizontally */
+  margin: 0 10px 10px 10px; /* spacing between buttons */
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+/* Analyze Stock button - primary style */
+.analyze-btn {
+  background-color: #111;
+  color: #fff;
+}
+
+.analyze-btn:hover {
+  opacity: 0.85;
+}
+
+/* Learn More button - secondary style */
+.learn-btn {
+  background-color: #fff;
+  border: 1px solid #111;
+  color: #111;
+}
+
+.learn-btn:hover {
+  background-color: #f5f5f5;
+}
+
+/* About CandleCodex AI Section */
+.home-about {
+  max-width: 800px;
+  margin: 0 auto 40px auto;
+  text-align: left;
+  padding: 30px 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.home-about h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.home-about p {
+  font-size: 1rem;
+  color: #444;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .home-title {
+    font-size: 2rem;
+  }
+  .home-description {
+    font-size: 1rem;
+  }
+  .home-about h2 {
+    font-size: 1.75rem;
+  }
+  .home-about p {
+    font-size: 0.95rem;
+  }
+}
