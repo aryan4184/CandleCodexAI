@@ -20,7 +20,7 @@ function Profile() {
 
     const fetchUser = async () => {
       try {
-        const res = await fetch("http://localhost:3000/users/me", {
+        const res = await fetch("https://wn6m9r6j-3000.inc1.devtunnels.ms/users/me", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,

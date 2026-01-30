@@ -1,0 +1,7 @@
+# Query: orm_mode
+
+2 results - 1 file
+
+code/backend/app/schemas.py:
+  33:         form_attributes = True
+  55:         form_attributes = True

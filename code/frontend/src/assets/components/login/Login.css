@@ -105,3 +105,26 @@
   cursor: pointer;
   margin-left: 6px;
 }
+
+.divider {
+  text-align: center;
+  margin: 16px 0;
+  color: #999;
+}
+
+.social-login {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.otp-btn {
+  background: #444;
+  color: white;
+}
+
+.google-btn {
+  background: white;
+  color: #333;
+  border: 1px solid #ddd;
+}

@@ -30,7 +30,7 @@ class UserResponse(BaseModel):
     token_balance: int
     
     class Config:
-        orm_mode = True
+        form_attributes = True
 
 class Token(BaseModel):
     access_token: str
@@ -52,4 +52,4 @@ class MessageResponse(BaseModel):
     timestamp: datetime
 
     class Config:
-        orm_mode = True
+        form_attributes = True

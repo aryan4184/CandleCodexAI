@@ -51,7 +51,7 @@ function Chat() {
 
     try {
       // ADDED: call backend /chat API
-      const response = await fetch("http://localhost:3000/chat", {
+      const response = await fetch("https://wn6m9r6j-3000.inc1.devtunnels.ms/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

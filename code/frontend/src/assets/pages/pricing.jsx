@@ -32,7 +32,7 @@ function Pricing() {
     try {
       /* Create order on BACKEND (FastAPI) */
       const orderRes = await axios.post(
-        `http://localhost:3000/create-order`,
+        `https://wn6m9r6j-3000.inc1.devtunnels.ms/create-order`,
         { plan_id: planId },
         {
           headers: {
@@ -57,7 +57,7 @@ function Pricing() {
           try {
             /* 3️⃣ Verify payment on BACKEND */
             const verifyRes = await axios.post(
-              `http://localhost:3000/verify-payment`,
+              `https://wn6m9r6j-3000.inc1.devtunnels.ms/verify-payment`,
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,

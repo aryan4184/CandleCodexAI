@@ -33,7 +33,7 @@ function RegisterModal({ onClose }) {
 
     try {
         // Send data to FastAPI register endpoint
-        const response = await fetch("http://localhost:3000/users/register", {
+        const response = await fetch("https://wn6m9r6j-3000.inc1.devtunnels.ms/users/register", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
