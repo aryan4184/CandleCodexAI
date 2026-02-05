@@ -1,14 +1,17 @@
 // LoginModal.jsx
 import React, { useEffect, useState } from "react";
 import "./Login.css";
+import api from "../../../api/axios";
+import { useAuth } from "../../../context/AuthContext";
 
 function LoginModal({ onClose }) {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [otp, setOtp] = useState("");
 
-  const [loginMode, setLoginMode] = useState("password"); 
+  const [loginMode, setLoginMode] = useState("password");
   const [otpSent, setOtpSent] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -24,20 +27,20 @@ function LoginModal({ onClose }) {
   }, [onClose]);
 
   useEffect(() => {
-  /* global google */
-  if (window.google) {
-    google.accounts.id.initialize({
-      client_id: "YOUR_GOOGLE_CLIENT_ID", // replace with your actual client ID
-      callback: handleGoogleResponse,     // function to handle the token
-    });
+    /* global google */
+    if (window.google) {
+      google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+      });
 
-    // Render the button inside a container div
-    google.accounts.id.renderButton(
-      document.getElementById("google-login-btn"),
-      { theme: "outline", size: "large", width: "250" }
-    );
-  }
-}, []);
+      // Render the button inside a container div
+      google.accounts.id.renderButton(
+        document.getElementById("google-login-btn"),
+        { theme: "outline", size: "large", width: "250" }
+      );
+    }
+  }, []);
 
 
   // ---------------- PASSWORD LOGIN ----------------
@@ -47,20 +50,22 @@ function LoginModal({ onClose }) {
     setLoading(true);
 
     try {
-      const response = await fetch("https://wn6m9r6j-3000.inc1.devtunnels.ms/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
+      const response = await api.post("/token",
+        new URLSearchParams({
           username: email,
           password,
           grant_type: "password",
         }),
-      });
+        {
+          headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        }
+      );
 
-      const data = await response.json();
-      if (!response.ok) throw new Error();
+      const data = response.data; // Axios response content
+      // if (!response.ok) logic is handled by catch
 
-      localStorage.setItem("access_token", data.access_token);
+
+      login(data.access_token);
       onClose();
     } catch {
       setError("Invalid email or password");
@@ -76,13 +81,9 @@ function LoginModal({ onClose }) {
     setLoading(true);
 
     try {
-      const response = await fetch("https://wn6m9r6j-3000.inc1.devtunnels.ms/auth/otp/request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier }),
-      });
+      await api.post("/auth/otp/request", { identifier });
+      // Axios throws if not OK
 
-      if (!response.ok) throw new Error();
 
       setOtpSent(true); // ✅ switch screen
     } catch {
@@ -99,16 +100,12 @@ function LoginModal({ onClose }) {
     setLoading(true);
 
     try {
-      const response = await fetch("https://wn6m9r6j-3000.inc1.devtunnels.ms/auth/otp/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, otp }),
-      });
+      const response = await api.post("/auth/otp/verify", { identifier, otp });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error();
+      const data = response.data;
 
-      localStorage.setItem("access_token", data.access_token);
+
+      login(data.access_token);
       onClose();
     } catch {
       setError("Invalid or expired OTP");
@@ -118,29 +115,26 @@ function LoginModal({ onClose }) {
   };
 
   // Google login
-const handleGoogleResponse = async (response) => {
-  setLoading(true);
-  setError("");
+  const handleGoogleResponse = async (response) => {
+    setLoading(true);
+    setError("");
 
-  try {
-    const res = await fetch("https://wn6m9r6j-3000.inc1.devtunnels.ms/auth/google", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ credential: response.credential }),
-    });
+    try {
+      const res = await api.post("/auth/google", { credential: response.credential });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error();
+      const data = res.data;
+      // if (!res.ok) throw new Error(); - handled by axios
 
-    localStorage.setItem("access_token", data.access_token);
-    onClose();
-  } catch (err) {
-    console.error("Google login failed", err);
-    setError("Google login failed");
-  } finally {
-    setLoading(false);
-  }
-};
+
+      login(data.access_token);
+      onClose();
+    } catch (err) {
+      console.error("Google login failed", err);
+      setError("Google login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -184,7 +178,7 @@ const handleGoogleResponse = async (response) => {
               Login with OTP
             </button>
 
-              {/* Google button will render here */}
+            {/* Google button will render here */}
             <div id="google-login-btn"></div>
           </>
         )}

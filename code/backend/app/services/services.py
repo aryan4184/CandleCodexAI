@@ -31,7 +31,7 @@ def generate_n8n_jwt(user_id: int) -> str:
 
 
 
-async def trigger_n8n_workflow(text: str, user_id: int):
+async def trigger_n8n_workflow(text: str, user_id: int, history: list = []):
     """
     Sends text to n8n Webhook and returns the response from n8n.
     Uses JWT (HS256) in Authorization header.
@@ -43,7 +43,7 @@ async def trigger_n8n_workflow(text: str, user_id: int):
         try:
             response = await client.post(
                 N8N_WEBHOOK_URL,
-                json={"message": text, "user_id": user_id},
+                json={"message": text, "user_id": user_id, "history": history},
                 headers={
                     "Content-Type": "application/json",
                     "Authorization": f"Bearer {token}"

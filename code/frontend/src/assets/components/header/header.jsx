@@ -1,28 +1,25 @@
 import "./Header.css";
 import logo from "../../react.svg";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 import LoginModal from "../login/login";
 import RegisterModal from "../register/register";
+import { useAuth } from "../../../context/AuthContext";
+
 
 export default function Header() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const navigate = useNavigate();
-  // Check token on mount
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    setIsAuthenticated(!!token);
-  }, []);
 
   // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    setIsAuthenticated(false);
+    logout();
+    navigate("/home"); // Optional: redirect to home after logout
   };
 
   return (
@@ -94,7 +91,6 @@ export default function Header() {
           {showLogin && (
             <LoginModal
               onClose={() => setShowLogin(false)}
-              onLoginSuccess={() => setIsAuthenticated(true)}
             />
           )}
 

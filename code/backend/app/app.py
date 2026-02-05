@@ -6,6 +6,8 @@ from .routers.users import router as users_router
 from .routers.chat import router as chat_router
 from .routers.payments import router as payment_router
 from .routers.social_auth import router as gauth_otp
+from app.core.redis import get_redis_pool
+from fastapi_limiter import FastAPILimiter
 
 from dotenv import load_dotenv
 import os
@@ -16,6 +18,12 @@ load_dotenv()
 
 # Create FastAPI app first
 app = FastAPI(title="Authentication API", version="1.0.0")
+
+@app.on_event("startup")
+async def startup():
+    redis = await get_redis_pool()
+    await FastAPILimiter.init(redis)
+
 
 
 origins = os.getenv("CORS_ORIGINS", "").split(",")

@@ -24,4 +24,6 @@ dependencies = [
     "razorpay>=2.0.0",
     "sqlalchemy>=2.0.45",
     "uvicorn>=0.38.0",
+    "redis>=5.0.0",
+    "fastapi-limiter>=0.1.6",
 ]

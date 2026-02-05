@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.db import Message, Conversation
@@ -44,8 +45,24 @@ async def chat_endpoint(
 
 
 
+    # 3. GET HISTORY (Context)
+    # Fetch last 10 messages (descending), then reverse to be chronological
+    history_msgs = (
+        db.query(Message)
+        .filter(Message.conversation_id == conversation_id)
+        .order_by(desc(Message.timestamp))
+        .limit(10)
+        .all()
+    )[::-1]
+    
+    # Format for n8n/AI (e.g. list of dicts)
+    history_context = [
+        {"role": m.sender, "content": m.content} 
+        for m in history_msgs
+    ]
+
     # 3. Call n8n workflow
-    ai_result = await trigger_n8n_workflow(msg.content, current_user.id)
+    ai_result = await trigger_n8n_workflow(msg.content, current_user.id, history_context)
 
 
 
