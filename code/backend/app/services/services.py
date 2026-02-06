@@ -31,7 +31,7 @@ def generate_n8n_jwt(user_id: int) -> str:
 
 
 
-async def trigger_n8n_workflow(text: str, user_id: int, history: list = []):
+async def trigger_n8n_workflow(text: str, user_id: int, history: list = [], image_data: str = None, session_id: str = None):
     """
     Sends text to n8n Webhook and returns the response from n8n.
     Uses JWT (HS256) in Authorization header.
@@ -43,7 +43,13 @@ async def trigger_n8n_workflow(text: str, user_id: int, history: list = []):
         try:
             response = await client.post(
                 N8N_WEBHOOK_URL,
-                json={"message": text, "user_id": user_id, "history": history},
+                json={
+                    "message": text, 
+                    "user_id": user_id, 
+                    "history": history, 
+                    "image": image_data,
+                    "session_id": session_id
+                },
                 headers={
                     "Content-Type": "application/json",
                     "Authorization": f"Bearer {token}"
@@ -57,16 +63,25 @@ async def trigger_n8n_workflow(text: str, user_id: int, history: list = []):
             else:
                 raise ValueError(f"Non-JSON response from n8n: {response.text}")
 
+            if isinstance(data, list):
+                if data:
+                    data = data[0]
+                else:
+                    data = {}
+
             output_text = (
-                data.get("output_text")
+                data.get("text")
+                or data.get("output")
+                or data.get("output_text")
                 or data.get("message")
                 or data.get("responseBody")
             )
 
-            return {
-                "text": output_text or "Here is your result.",
-                "image": None
-            }
+            # Ensure 'text' key is populated for compatibility
+            data["text"] = output_text or "Here is your result."
+            
+            # Return full data so keys like 'chart_url', 'ticker' are preserved
+            return data
 
         except httpx.HTTPStatusError as e:
             logger.error(f"n8n returned error status: {e.response.status_code} - {e.response.text}")

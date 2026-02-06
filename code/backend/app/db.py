@@ -33,6 +33,9 @@ class User(Base):
     conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user")
     payment_orders = relationship("PaymentOrder", back_populates="user")
+    
+    # Store JSON string of preferences (e.g. {"symbol": "BTCUSDT", "interval": "D"})
+    trading_preferences = Column(Text, default='{"symbol": "NSE:NIFTY"}')
 
 
 
@@ -79,6 +82,7 @@ class Conversation(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    title = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="conversations")

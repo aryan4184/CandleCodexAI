@@ -7,6 +7,7 @@ from app.services.payments import create_order as razorpay_create_order, verify_
 from app.schemas import PaymentRequest, PaymentVerifyRequest
 from app.constants.plans import PLANS
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,8 @@ def create_payment_order(
             "order_id": razorpay_order["id"],
             "amount": amount,
             "currency": razorpay_order["currency"],
-            "tokens": tokens
+            "tokens": tokens,
+            "key_id": os.getenv("RAZORPAY_KEY_ID")
         }
 
     except Exception as e:

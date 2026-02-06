@@ -1,0 +1,237 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "chat",
+                "responseMode": "responseNode",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [
+                0,
+                0
+            ],
+            "id": "2cfe661b-fdd4-4026-a082-867b2a1ab328",
+            "name": "Incoming_request",
+            "webhookId": "1ee90cfe-f752-4113-a48a-2d377c8c90b4"
+        },
+        {
+            "parameters": {
+                "jsCode": "const input = $input.item.json;\nconst messages = [];\n\nmessages.push({\n  role: \"system\",\n  content: `You are an assistant that extracts stock or crypto tickers if they exist.\n\nReturn VALID JSON ONLY in this format:\n{\n  \"text\": string,\n  \"ticker\": string | null\n}\n\nRules:\n- Use standard tickers (AAPL, TSLA, BTCUSDT, SPX)\n- If no ticker is clearly mentioned or implied, set ticker to null\n- Do not invent tickers\n- No markdown code blocks\n- No backticks\n- Raw JSON only`\n});\n\nif (Array.isArray(input.history)) {\n  for (const msg of input.history) {\n    if (msg.role && msg.content) {\n      messages.push({ role: msg.role, content: msg.content });\n    }\n  }\n}\n\nconst userMessage = input.message || input.body?.message || \"\";\nif (userMessage.trim()) {\n  messages.push({ role: \"user\", content: userMessage });\n}\n\nreturn { \n  session_id: input.session_id || input.body?.session_id || \"default-session\", \n  messages \n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                240,
+                0
+            ],
+            "id": "prepare-prompt",
+            "name": "Prepare Prompt"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.perplexity.ai/chat/completions",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "httpBearerAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ JSON.stringify({\n  model: \"sonar-pro\",\n  messages: $json.messages,\n  temperature: 0\n}) }}",
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.3,
+            "position": [
+                480,
+                0
+            ],
+            "id": "perplexity-api",
+            "name": "Perplexity API",
+            "credentials": {
+                "httpBearerAuth": {
+                    "id": "IGRVsfWwctz0tykT",
+                    "name": "Bearer Auth account 2"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const response = $input.item.json;\n\nlet content = response.choices?.[0]?.message?.content || \"\";\n\ncontent = content\n  .replace(/```json\\s*/gi, '')\n  .replace(/```\\s*/g, '')\n  .replace(/^`+|`+$/g, '')\n  .trim();\n\nconst jsonMatch = content.match(/\\{[\\s\\S]*\\}/);\nif (jsonMatch) {\n  content = jsonMatch[0];\n}\n\nlet parsed;\ntry {\n  parsed = JSON.parse(content);\n} catch (error) {\n  content = content.replace(/[\\r\\n]+/g, ' ');\n  try {\n    parsed = JSON.parse(content);\n  } catch (e) {\n    throw new Error(`Failed to parse JSON: ${content}`);\n  }\n}\n\nconst sessionId = $('Prepare Prompt').item.json.session_id;\n\nreturn {\n  session_id: sessionId,\n  text: parsed.text || \"\",\n  ticker: parsed.ticker || null\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                720,
+                0
+            ],
+            "id": "parse-response",
+            "name": "Parse Response"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict"
+                    },
+                    "conditions": [
+                        {
+                            "id": "has-ticker",
+                            "leftValue": "={{ $json.ticker }}",
+                            "rightValue": "",
+                            "operator": {
+                                "type": "string",
+                                "operation": "notEmpty"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+                960,
+                0
+            ],
+            "id": "check-ticker",
+            "name": "Has Ticker?"
+        },
+        {
+            "parameters": {
+                "jsCode": "const ticker = $input.item.json.ticker;\nconst text = $input.item.json.text;\nconst sessionId = $input.item.json.session_id;\n\n// Generate a simple chart URL using QuickChart\nconst chartConfig = {\n  type: 'line',\n  data: {\n    labels: ['5d ago', '4d ago', '3d ago', '2d ago', 'Yesterday', 'Today'],\n    datasets: [{\n      label: ticker + ' Price Trend',\n      data: [100, 102, 101, 105, 107, 110],\n      borderColor: 'rgb(34, 139, 34)',\n      backgroundColor: 'rgba(34, 139, 34, 0.1)',\n      fill: true,\n      tension: 0.4,\n      pointRadius: 4,\n      pointHoverRadius: 6\n    }]\n  },\n  options: {\n    title: {\n      display: true,\n      text: ticker + ' - Price Chart',\n      fontSize: 18,\n      fontColor: '#333'\n    },\n    legend: {\n      display: false\n    },\n    scales: {\n      yAxes: [{\n        ticks: {\n          callback: function(value) {\n            return '$' + value;\n          }\n        },\n        gridLines: {\n          color: 'rgba(0, 0, 0, 0.1)'\n        }\n      }],\n      xAxes: [{\n        gridLines: {\n          display: false\n        }\n      }]\n    }\n  }\n};\n\n// Generate chart URL\nconst chartUrl = `https://quickchart.io/chart?width=600&height=300&backgroundColor=white&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;\n\n// Alternative chart services you can use:\n// TradingView: https://www.tradingview.com/chart/?symbol=${ticker}\n// FinViz: https://finviz.com/chart.ashx?t=${ticker}&ty=c&ta=1&p=d\n\nreturn {\n  session_id: sessionId,\n  text: text,\n  ticker: ticker,\n  chart_url: chartUrl,\n  chart_embed: `<img src=\"${chartUrl}\" alt=\"${ticker} chart\" />`,\n  tradingview_link: `https://www.tradingview.com/chart/?symbol=${ticker}`\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1200,
+                -100
+            ],
+            "id": "generate-chart",
+            "name": "Generate Chart"
+        },
+        {
+            "parameters": {
+                "jsCode": "const sessionId = $input.item.json.session_id;\nconst text = $input.item.json.text;\n\nreturn {\n  session_id: sessionId,\n  text: text,\n  ticker: null,\n  chart_url: null,\n  tradingview_link: null\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1200,
+                100
+            ],
+            "id": "no-chart",
+            "name": "No Chart"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1.5,
+            "position": [
+                1440,
+                0
+            ],
+            "id": "respond-webhook",
+            "name": "Respond to Webhook"
+        }
+    ],
+    "connections": {
+        "Incoming_request": {
+            "main": [
+                [
+                    {
+                        "node": "Prepare Prompt",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Prepare Prompt": {
+            "main": [
+                [
+                    {
+                        "node": "Perplexity API",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Perplexity API": {
+            "main": [
+                [
+                    {
+                        "node": "Parse Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse Response": {
+            "main": [
+                [
+                    {
+                        "node": "Has Ticker?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Has Ticker?": {
+            "main": [
+                [
+                    {
+                        "node": "Generate Chart",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "No Chart",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate Chart": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "No Chart": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "7c7b18ba6ee041f81506ed25eb42307f9357af965955639d226742ae4fc6168b"
+    }
+}

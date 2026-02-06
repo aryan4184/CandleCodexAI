@@ -40,12 +40,27 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
+class ConversationUpdate(BaseModel):
+    title: str
+
+class ConversationResponse(BaseModel):
+    id: int
+    title: Optional[str] = None
+    created_at: datetime
+    # Could add snippet or title later
+
+    class Config:
+        form_attributes = True
+
+
 class MessageCreate(BaseModel):
     content: str
+    image_data: Optional[str] = None # Base64 string
     conversation_id: Optional[int] = None # Optional: If None, create new conversation
 
 class MessageResponse(BaseModel):
     id: int
+    conversation_id: int
     sender: str
     content: str
     image_url: Optional[str] = None

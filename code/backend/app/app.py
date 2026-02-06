@@ -6,6 +6,7 @@ from .routers.users import router as users_router
 from .routers.chat import router as chat_router
 from .routers.payments import router as payment_router
 from .routers.social_auth import router as gauth_otp
+from .routers.trading import router as trading_router
 from app.core.redis import get_redis_pool
 from fastapi_limiter import FastAPILimiter
 
@@ -25,8 +26,9 @@ async def startup():
     await FastAPILimiter.init(redis)
 
 
-
-origins = os.getenv("CORS_ORIGINS", "").split(",")
+origins = [
+    o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,12 +38,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from .routers.stocks import router as stocks_router
 
 # Include routers
 app.include_router(users_router, tags=["authentication"])
 app.include_router(chat_router, tags=["chat"])
-app.include_router(payment_router, tags=["payment"])
+app.include_router(payment_router, prefix="/payment", tags=["payment"])
 app.include_router(gauth_otp, tags=["Social Auth"])
+app.include_router(trading_router, prefix="/trading", tags=["trading"])
+app.include_router(stocks_router, prefix="/stocks", tags=["stocks"])
 
 @app.get("/")
 def root():
