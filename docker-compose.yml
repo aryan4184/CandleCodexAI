@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: fastapi_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: candlecodex
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./code/backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./code/backend/.env
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://fastapi_user:password@db:5432/candlecodex
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./code/backend:/app
+
+  frontend:
+    build:
+      context: ./code/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./code/frontend/.env
+    # To enable polling for hot-reload in some environments
+    environment:
+      - WATCHPACK_POLLING=true
+      - REACT_APP_BACKEND_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./code/frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
