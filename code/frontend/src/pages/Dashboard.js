@@ -127,7 +127,7 @@ export default function Dashboard() {
           transition={{ duration: 0.5 }}
         >
           <div className="mb-8">
-            <h1 className="font-heading text-4xl font-black tracking-tighter mb-2">
+            <h1 className="font-heading text-4xl font-black mb-2">
               DASHBOARD
             </h1>
             <p className="text-muted-foreground font-body">Welcome back, {user?.full_name}</p>
@@ -184,7 +184,7 @@ export default function Dashboard() {
               )}
 
 
-              <div className="h-[400px] w-full bg-black/50 rounded-lg border border-white/5 relative">
+              <div className="h-[500px] w-full bg-black/50 rounded-lg border border-white/5 relative">
                 <TradingChart key={chartSymbol} symbol={chartSymbol} theme="dark" />
               </div>
             </div>

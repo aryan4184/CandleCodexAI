@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, memo } from "react";
 
-function TradingChart({ symbol, theme = "dark" }) {
+function TradingChart({ symbol, theme = "dark", hideSideToolbar = false, interval = "D", timeframe = "5D" }) {
     const containerRef = useRef(null);
 
     useEffect(() => {
@@ -23,7 +23,8 @@ function TradingChart({ symbol, theme = "dark" }) {
         script.innerHTML = JSON.stringify({
             autosize: true,
             symbol: symbol,
-            interval: "D",
+            interval: interval,
+            timeframe: timeframe,
             timezone: "Asia/Kolkata",
             theme: theme,
             style: "1",
@@ -31,7 +32,7 @@ function TradingChart({ symbol, theme = "dark" }) {
             enable_publishing: false,
             allow_symbol_change: true,
             hide_top_toolbar: false,
-            hide_side_toolbar: false,
+            hide_side_toolbar: hideSideToolbar,
             save_image: false,
             studies: [],
             currency: "INR",

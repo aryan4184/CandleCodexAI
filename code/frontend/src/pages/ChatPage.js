@@ -5,11 +5,22 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { Send, ArrowLeft, Loader2, User, LogOut, Plus, MessageSquare, PanelLeftClose, PanelLeftOpen, MoreHorizontal, Edit2, Trash2, X, Check, Paperclip, Image as ImageIcon } from "lucide-react";
+import StockChart from "../components/StockChart";
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
+import ErrorBoundary from "../components/ErrorBoundary";
 
 export default function ChatPage() {
   const { user, logout, API } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
+
+  // Debugging: Monitor messages
+  useEffect(() => {
+    console.log("Current Messages:", messages);
+  }, [messages]);
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [conversations, setConversations] = useState([]);
@@ -175,7 +186,15 @@ export default function ChatPage() {
       });
 
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Failed to send message");
+      console.error("Send Message Error:", error);
+      if (error.response) {
+        toast.error(error.response.data?.detail || "Server rejected message");
+      } else if (error.request) {
+        console.error("No response from server:", error.request);
+        toast.error("Network Error: Message not sent. Check connection/tunnel.");
+      } else {
+        toast.error("Error sending message: " + error.message);
+      }
       setMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
     } finally {
       setLoading(false);
@@ -356,7 +375,7 @@ export default function ChatPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center py-20"
               >
-                <div className="font-heading text-4xl font-black tracking-tighter mb-4">
+                <div className="font-heading text-4xl font-black mb-4">
                   ASK ME ANYTHING
                 </div>
                 <p className="text-muted-foreground font-body mb-8">
@@ -390,22 +409,43 @@ export default function ChatPage() {
                 >
                   {/* Avatar/Icon if needed */}
                   <div className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} max-w-[80%]`}>
-                    {/* Image/Chart Display */}
-                    {(msg.image_data || msg.image_url) && (
+
+                    {/* Custom Native Chart (Preferred) */}
+                    {(() => {
+                      // Logic to extract ticker from msg.ticker OR msg.image_url (hack)
+                      let displayTicker = msg.ticker;
+                      if (!displayTicker && msg.image_url && msg.image_url.startsWith("ticker:")) {
+                        displayTicker = msg.image_url.replace("ticker:", "");
+                      }
+
+                      return displayTicker ? (
+                        <div className="mb-4 w-[800px] h-[400px]">
+                          <ErrorBoundary>
+                            <StockChart symbol={displayTicker} />
+                          </ErrorBoundary>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* Image/Chart Display (Fallback only if no Custom Chart) */}
+                    {!msg.ticker && (msg.image_data || msg.image_url) && (!msg.image_url || !msg.image_url.startsWith("ticker:")) && (
                       <div className="mb-2 max-w-full overflow-hidden rounded-lg border border-white/10 bg-black/20">
                         {/* Check if it's a TradingView widget URL */}
                         {(msg.image_url && msg.image_url.includes('tradingview.com/widgetembed')) ? (
                           // Render as iframe for TradingView widgets
-                          <div className="w-[800px] h-[400px] relative">
+                          <div className="w-full md:w-[1200px] h-[200px] relative">
                             <iframe
                               src={msg.image_url}
-                              className="w-full h-full"
+                              className="w-full h-full rounded-lg"
                               frameBorder="0"
                               allowTransparency="true"
+                              allowFullScreen={true}
                               scrolling="no"
                               title="TradingView Chart"
+                              style={{ backgroundColor: 'transparent' }}
                             />
                           </div>
+
                         ) : (
                           // Render as image for regular images
                           <a
@@ -432,13 +472,43 @@ export default function ChatPage() {
                       </div>
                     )}
 
+                    {/* Inside render loop: */}
                     <div
-                      className={`p-4 font-body text-sm whitespace-pre-wrap rounded-2xl ${msg.sender === "user"
+                      className={`p-4 font-body text-sm rounded-2xl ${msg.sender === "user"
                         ? "bg-primary text-white"
                         : "glass-card text-foreground"
                         }`}
                     >
-                      {msg.content}
+                      {msg.sender === "user" ? (
+                        <div className="whitespace-pre-wrap">{msg.content}</div>
+                      ) : (
+                        <div className="prose prose-invert max-w-none text-sm">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                            components={{
+                              p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                              a: ({ node, ...props }) => <a className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                              ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2 space-y-1" {...props} />,
+                              ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2 space-y-1" {...props} />,
+                              li: ({ node, ...props }) => <li className="mb-0.5" {...props} />,
+                              h1: ({ node, ...props }) => <h1 className="text-xl font-bold mb-2 mt-4" {...props} />,
+                              h2: ({ node, ...props }) => <h2 className="text-lg font-bold mb-2 mt-3" {...props} />,
+                              h3: ({ node, ...props }) => <h3 className="text-md font-bold mb-1 mt-2" {...props} />,
+                              blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-primary/50 pl-4 py-1 my-2 bg-white/5 rounded-r" {...props} />,
+                              code: ({ node, inline, className, children, ...props }) => {
+                                return inline ? (
+                                  <code className="bg-white/10 rounded px-1 py-0.5 font-mono text-xs" {...props}>{children}</code>
+                                ) : (
+                                  <pre className="bg-black/50 p-2 rounded-md overflow-x-auto my-2 border border-white/10"><code className="font-mono text-xs" {...props}>{children}</code></pre>
+                                )
+                              }
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>

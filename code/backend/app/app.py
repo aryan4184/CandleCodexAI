@@ -8,7 +8,7 @@ from .routers.payments import router as payment_router
 from .routers.social_auth import router as gauth_otp
 from .routers.trading import router as trading_router
 from app.core.redis import get_redis_pool
-from fastapi_limiter import FastAPILimiter
+# from fastapi_limiter import FastAPILimiter
 
 from dotenv import load_dotenv
 import os
@@ -23,7 +23,7 @@ app = FastAPI(title="Authentication API", version="1.0.0")
 @app.on_event("startup")
 async def startup():
     redis = await get_redis_pool()
-    await FastAPILimiter.init(redis)
+    # await FastAPILimiter.init(redis)
 
 
 origins = [
@@ -32,7 +32,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex=".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

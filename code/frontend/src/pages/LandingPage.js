@@ -4,6 +4,7 @@ import Marquee from "react-fast-marquee";
 import { TrendingUp, BarChart3, Brain, Zap, Shield, LineChart } from "lucide-react";
 
 import PixelSnow from "../assets/components/background/PixelSnow";
+import TradingChart from "../components/TradingChart";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="font-heading text-6xl lg:text-7xl font-black tracking-tighter mb-6 leading-none">
+              <h1 className="font-heading text-6xl lg:text-7xl font-black mb-6 leading-none">
                 TRADE SMARTER
                 <br />
                 <span className="text-gradient">WITH AI</span>
@@ -114,12 +115,8 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              <div className="glass-card p-8 border-glow">
-                <img
-                  src="https://images.unsplash.com/photo-1762279389002-7b6abd7bd6c6?crop=entropy&cs=srgb&fm=jpg&q=85"
-                  alt="Trading Analytics"
-                  className="w-full h-auto rounded-sm"
-                />
+              <div className="glass-card p-1 border-glow h-[300px] md:h-[400px] overflow-hidden relative bg-black/40">
+                <TradingChart symbol="NSE:NIFTY" theme="dark" hideSideToolbar={true} />
               </div>
             </motion.div>
           </div>
@@ -149,7 +146,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="font-heading text-5xl font-black tracking-tighter mb-4">
+            <h2 className="font-heading text-5xl font-black mb-4">
               POWERFUL FEATURES
             </h2>
             <p className="text-muted-foreground font-body text-lg max-w-2xl mx-auto">
@@ -188,7 +185,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="glass-card p-12 border-glow"
           >
-            <h2 className="font-heading text-5xl font-black tracking-tighter mb-6">
+            <h2 className="font-heading text-5xl font-black mb-6">
               START TRADING SMARTER TODAY
             </h2>
             <p className="text-muted-foreground font-body text-lg mb-8">

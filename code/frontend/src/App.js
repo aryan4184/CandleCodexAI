@@ -2,6 +2,11 @@ import { useState, useEffect, createContext, useContext } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import axios from "axios";
+
+// Global Axios Config to bypass tunnel warnings
+axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true';
+axios.defaults.headers.common['X-Tunnel-Skip-Anti-Phishing-Page'] = '1';
+
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
@@ -11,7 +16,7 @@ import UpdateProfilePage from "./pages/UpdateProfilePage";
 import PlansPage from "./pages/PlansPage";
 import { Toaster } from "sonner";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "https://l9pdn5jv-8000.inc1.devtunnels.ms";
 const API = `${BACKEND_URL}`;
 
 const AuthContext = createContext(null);
@@ -41,6 +46,10 @@ function App() {
     const token = localStorage.getItem("token");
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      // Bypass Tunnel Warnings
+      axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true';
+      axios.defaults.headers.common['X-Tunnel-Skip-Anti-Phishing-Page'] = '1';
+
       refreshUserProfile()
         .catch(() => {
           localStorage.removeItem("token");

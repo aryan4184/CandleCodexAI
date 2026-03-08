@@ -87,11 +87,27 @@ export default function LoginPage() {
         navigate("/dashboard");
       }
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Authentication failed");
+      console.error("Login/Register Error:", error);
+      if (error.response) {
+        // Server responded with a status code outside 2xx
+        toast.error(error.response.data.detail || "Authentication failed");
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error("No response received. Request details:", error.request);
+        toast.error("Network Error: No response from server. Check console for details.");
+      } else {
+        // Something happened in setting up the request
+        toast.error(`Error: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  // Debug: Log API URL on mount
+  useState(() => {
+    console.log("LoginPage mounted. Using API URL:", API);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">

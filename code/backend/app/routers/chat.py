@@ -163,11 +163,18 @@ async def chat_endpoint(
 
     # 4. Save AI message
     # User requested raw chart_url without conversion
+    final_image_url = ai_result.get("chart_url")
+    
+    # HACK: If we have a ticker for Custom Chart but no chart_url, store ticker in image_url field
+    # This avoids DB migration while persisting the ticker for the frontend.
+    if not final_image_url and ai_result.get("ticker"):
+        final_image_url = f"ticker:{ai_result.get('ticker')}"
+
     ai_message = Message(
         conversation_id=conversation_id,
         sender="ai",
         content=ai_result.get("text", ""),
-        image_url=ai_result.get("chart_url") 
+        image_url=final_image_url 
     )
     db.add(ai_message)
     db.commit()
